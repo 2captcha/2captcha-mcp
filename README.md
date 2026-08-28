@@ -280,19 +280,6 @@ One live browser session per account, driven step by step:
 | `POLLING_TIMEOUT` | no | `600` | Per-tool-call timeout in seconds (renders, batch jobs and CAPTCHA solves can take minutes) |
 | `RATE_LIMIT` | no | — | Client-side call limiter, e.g. `100/1h` or `50/30m` |
 
-### Self-hosted servers
-
-This package talks to any 2Captcha Web MCP deployment, not just the hosted one:
-
-```json
-"env": {
-  "API_TOKEN": "YOUR_TOKEN",
-  "MCP_URL": "https://your-host.example.com/mcp"
-}
-```
-
-Against a local dev server started with `WEBPARSE_ALLOW_UNAUTHENTICATED=1`, `API_TOKEN` may be omitted (a warning is printed).
-
 ---
 
 ## How it works
