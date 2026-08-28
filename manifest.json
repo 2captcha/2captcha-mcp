@@ -1,0 +1,95 @@
+{
+  "manifest_version": "0.3",
+  "name": "2captcha-mcp",
+  "display_name": "2Captcha MCP",
+  "version": "0.1.0",
+  "description": "Web scraping with anti-bot bypass, marketplace parsing to structured JSON, browser automation and CAPTCHA solving for AI agents",
+  "long_description": "The official 2Captcha Model Context Protocol (MCP) server gives LLMs and AI agents real-time access to web data behind anti-bot protection. Scrape any page through a tiered ladder (hidden JSON APIs, TLS-impersonating HTTP, rotating residential proxies, managed browser with CAPTCHA solving), parse marketplace product and search pages into clean structured JSON, extract arbitrary JSON-schema data from any URL, drive a real browser step by step, and solve any CAPTCHA type 2Captcha supports.",
+  "author": {
+    "name": "2Captcha",
+    "email": "support@2captcha.com",
+    "url": "https://2captcha.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/2captcha/2captcha-mcp.git"
+  },
+  "homepage": "https://2captcha.com",
+  "documentation": "https://github.com/2captcha/2captcha-mcp/blob/main/README.md",
+  "support": "https://github.com/2captcha/2captcha-mcp/issues",
+  "keywords": ["web-scraping", "captcha", "data-extraction", "marketplace", "parsing", "proxy", "browser-automation", "anti-bot"],
+  "license": "MIT",
+  "server": {
+    "type": "node",
+    "entry_point": "@2captcha/mcp",
+    "mcp_config": {
+      "command": "npx",
+      "args": ["@2captcha/mcp"],
+      "env": {
+        "API_TOKEN": "${user_config.api_token}",
+        "GROUPS": "${user_config.groups}"
+      }
+    }
+  },
+  "tools": [
+    {"name": "scrape_page", "description": "Fetch any URL and return its readable content as markdown (or raw HTML), defeating anti-bot protection with a tiered ladder: fast HTTP, TLS impersonation, rotating residential proxies, managed browser with CAPTCHA solving. No LLM cost."},
+    {"name": "search_web", "description": "Find URLs for a query: ranked organic results with title, url and snippet."},
+    {"name": "discover_urls", "description": "List URLs a site publishes in robots.txt and XML sitemaps, without crawling pages — a reviewable URL inventory for the batch tools."},
+    {"name": "parse_marketplace", "description": "Parse a marketplace product page or search listing into structured JSON (title, price, rating, seller, stock, …), taking the cheapest tier that works: hidden JSON API, JSON-LD, learned selectors, then LLM extraction."},
+    {"name": "extract", "description": "Extract data matching your own JSON Schema from any URL or from raw text you already hold, via LLM extraction (BYOK-aware)."},
+    {"name": "get_account", "description": "Identity and capability probe: tenant, configured providers, spend counters. No network, no cost."},
+    {"name": "scrape_pages", "description": "Batch scrape_page over many URLs as a background job; returns a job you can poll."},
+    {"name": "parse_pages", "description": "Batch parse_marketplace over many URLs as a background job; returns a job you can poll."},
+    {"name": "get_job", "description": "Poll a batch job: status, per-item results as they complete."},
+    {"name": "cancel_job", "description": "Cancel a running batch job (stops further spend)."},
+    {"name": "browser_navigate", "description": "Navigate the managed browser session to a URL; reports blocked status."},
+    {"name": "browser_go_back", "description": "Go back in the browser session history."},
+    {"name": "browser_go_forward", "description": "Go forward in the browser session history."},
+    {"name": "browser_reload", "description": "Reload the current page."},
+    {"name": "browser_scroll", "description": "Scroll the page or an element."},
+    {"name": "browser_click", "description": "Click an element by snapshot ref or CSS selector."},
+    {"name": "browser_type", "description": "Type text into an element key by key."},
+    {"name": "browser_fill", "description": "Fill an input with a value."},
+    {"name": "browser_select_option", "description": "Select an option in a dropdown."},
+    {"name": "browser_hover", "description": "Hover over an element."},
+    {"name": "browser_drag", "description": "Drag one element onto another."},
+    {"name": "browser_press_key", "description": "Press a keyboard key in the page."},
+    {"name": "browser_get_text", "description": "Get the visible text of the page or of matching elements."},
+    {"name": "browser_get_html", "description": "Get the HTML of the page or of matching elements."},
+    {"name": "browser_console_messages", "description": "Read the page's console output."},
+    {"name": "browser_evaluate", "description": "Evaluate JavaScript in the page and return the result."},
+    {"name": "browser_snapshot", "description": "Accessibility-tree snapshot of the page with element refs for the interaction tools."},
+    {"name": "browser_snapshot_items", "description": "Compact list of interactive elements with refs."},
+    {"name": "browser_screenshot", "description": "Screenshot the current page (PNG)."},
+    {"name": "browser_save_as_pdf", "description": "Save the current page as PDF."},
+    {"name": "browser_save_session", "description": "Persist the current login state (cookies, storage) under a name."},
+    {"name": "browser_load_session", "description": "Restore a previously saved login state."},
+    {"name": "browser_list_sessions", "description": "List saved login states."},
+    {"name": "list_captcha_types", "description": "The catalogue of solvable CAPTCHA types with their required parameters — call before solve_captcha."},
+    {"name": "solve_captcha", "description": "Solve a CAPTCHA of any supported type (reCAPTCHA, Turnstile, hCaptcha, image, …) and return the token/answer."},
+    {"name": "captcha_report", "description": "Report a solution as good or bad (a bad report refunds)."},
+    {"name": "captcha_balance", "description": "Current 2Captcha balance in USD."},
+    {"name": "session_stats", "description": "Tool usage during this session."}
+  ],
+  "user_config": {
+    "api_token": {
+      "type": "string",
+      "title": "API Token",
+      "description": "Your 2Captcha API key from https://2captcha.com/setting",
+      "sensitive": true,
+      "required": true
+    },
+    "groups": {
+      "type": "string",
+      "title": "Tool groups",
+      "description": "Comma-separated tool groups to enable: parsing, batch, browser, captcha, all (default: parsing,batch,captcha)",
+      "required": false,
+      "default": "parsing,batch,captcha"
+    }
+  },
+  "compatibility": {
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  }
+}

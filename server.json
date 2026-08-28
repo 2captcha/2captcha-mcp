@@ -1,0 +1,71 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.2captcha/mcp",
+  "description": "2Captcha Web MCP: scraping with anti-bot bypass, marketplace parsing to JSON, browser automation and CAPTCHA solving for AI agents",
+  "repository": {
+    "url": "https://github.com/2captcha/2captcha-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@2captcha/mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "API_TOKEN",
+          "description": "Your 2Captcha API key (or the bearer token your server operator issued)",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "GROUPS",
+          "description": "Comma-separated tool group ids: parsing, batch, browser, captcha, all (default: parsing,batch,captcha)",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "TOOLS",
+          "description": "Comma-separated individual tool names to enable",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "MCP_URL",
+          "description": "Remote MCP endpoint (default: https://mcp.2captcha.com/mcp) — set for a self-hosted webparse server",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "POLLING_TIMEOUT",
+          "description": "Per-tool-call timeout in seconds (default: 600)",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "number"
+        },
+        {
+          "name": "RATE_LIMIT",
+          "description": "Client-side call rate limit, e.g. 100/1h or 50/30m",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.2captcha.com/mcp"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+    "name": "@2captcha/mcp",
+    "version": "0.1.0",
+    "description": "Official 2Captcha MCP server — web scraping, marketplace parsing, structured extraction, browser automation and CAPTCHA solving for AI agents",
+    "type": "module",
+    "main": "./server.js",
+    "bin": {
+        "2captcha-mcp": "./server.js"
+    },
+    "scripts": {
+        "start": "node server.js",
+        "test": "node --test"
+    },
+    "keywords": [
+        "mcp",
+        "2captcha",
+        "web-scraping",
+        "captcha",
+        "marketplace",
+        "data-extraction",
+        "browser-automation"
+    ],
+    "author": "2Captcha",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/2captcha/2captcha-mcp.git"
+    },
+    "bugs": {
+        "url": "https://github.com/2captcha/2captcha-mcp/issues"
+    },
+    "homepage": "https://2captcha.com",
+    "license": "MIT",
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.21.2",
+        "zod": "^3.24.2"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "files": [
+        "server.js",
+        "tool_groups.js",
+        "CHANGELOG.md",
+        "manifest.json",
+        "server.json"
+    ],
+    "mcpName": "com.2captcha/mcp"
+}

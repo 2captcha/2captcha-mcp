@@ -1,0 +1,27 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required: [apiToken]
+    properties:
+      apiToken:
+        type: string
+        description: "Your 2Captcha API key, from https://2captcha.com/setting"
+      groups:
+        type: string
+        default: "parsing,batch,captcha"
+        description: "Optional: comma-separated tool groups (parsing, batch, browser, captcha, all)"
+      mcpUrl:
+        type: string
+        default: "https://mcp.2captcha.com/mcp"
+        description: "Optional: MCP endpoint of a self-hosted server"
+  commandFunction: |-
+    config => ({
+      command: 'node',
+      args: ['server.js'],
+      env: {
+        API_TOKEN: config.apiToken,
+        GROUPS: config.groups,
+        MCP_URL: config.mcpUrl
+      }
+    })
