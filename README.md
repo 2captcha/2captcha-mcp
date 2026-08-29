@@ -8,7 +8,7 @@
 <p>
   <a href="#quick-start">Quick Start</a> •
   <a href="#tool-selection-groups">Tool Groups</a> •
-  <a href="#tools-reference-35-tools">Tools</a> •
+  <a href="#tools-reference-37-tools">Tools</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#troubleshooting">Troubleshooting</a>
 </p>
