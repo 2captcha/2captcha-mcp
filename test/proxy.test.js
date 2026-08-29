@@ -14,6 +14,14 @@ import {ListToolsRequestSchema, CallToolRequestSchema}
     from '@modelcontextprotocol/sdk/types.js';
 import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {StdioClientTransport} from '@modelcontextprotocol/sdk/client/stdio.js';
+import {webcrypto} from 'node:crypto';
+
+// The SDK's server-side Streamable HTTP transport calls crypto.randomUUID()
+// on the global, which Node 18 does not define. That transport only exists
+// here, in the fake remote — the real remote is a Python service — so this
+// polyfill belongs to the test harness, not to what we ship.
+if (typeof globalThis.crypto==='undefined')
+    globalThis.crypto = webcrypto;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const server_js = path.join(__dirname, '..', 'server.js');
@@ -98,6 +106,12 @@ async function start_proxy(env){
         stderr: 'pipe',
     });
     const client = new Client({name: 'test-client', version: '0.0.0'});
+    // Surface the child's stderr as test diagnostics. Without this a crash in
+    // server.js reaches CI as a bare "Connection closed" with no cause.
+    transport.stderr?.on('data', chunk=>{
+        for (const line of String(chunk).split('\n').filter(Boolean))
+            console.error(`[server.js] ${line}`);
+    });
     await client.connect(transport);
     return client;
 }

@@ -20,7 +20,14 @@ import {ListToolsRequestSchema, CallToolRequestSchema}
     from '@modelcontextprotocol/sdk/types.js';
 import {z} from 'zod';
 import {createRequire} from 'node:module';
+import {webcrypto} from 'node:crypto';
 import {DEFAULT_GROUPS, build_allowed_tools} from './tool_groups.js';
+
+// Node 18 does not expose Web Crypto as a global (it landed in Node 19).
+// Parts of the SDK reference `globalThis.crypto` directly and throw without
+// it; this keeps the package honest about its `engines: >=18`.
+if (typeof globalThis.crypto==='undefined')
+    globalThis.crypto = webcrypto;
 
 const require = createRequire(import.meta.url);
 const package_json = require('./package.json');
