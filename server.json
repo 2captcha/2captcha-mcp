@@ -19,14 +19,14 @@
       "environmentVariables": [
         {
           "name": "API_TOKEN",
-          "description": "Your 2Captcha API key (or the bearer token your server operator issued)",
+          "description": "Your 2Captcha API key (or the bearer token your server operator issued). Signing up is free and includes a monthly allowance of calls.",
           "isRequired": true,
           "isSecret": true,
           "format": "string"
         },
         {
           "name": "GROUPS",
-          "description": "Comma-separated tool group ids: parsing, batch, browser, captcha, all (default: parsing,batch,captcha)",
+          "description": "Comma-separated tool group ids: parsing, batch, captcha, browser (11 login tools), browser_full (all 23), all (default: parsing,batch,captcha)",
           "isRequired": false,
           "isSecret": false,
           "format": "string"

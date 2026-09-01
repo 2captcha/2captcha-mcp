@@ -10,7 +10,7 @@ startCommand:
       groups:
         type: string
         default: "parsing,batch,captcha"
-        description: "Optional: comma-separated tool groups (parsing, batch, browser, captcha, all)"
+        description: "Optional: comma-separated tool groups (parsing, batch, captcha, browser, browser_full, all)"
       mcpUrl:
         type: string
         default: "https://mcp.2captcha.com/mcp"

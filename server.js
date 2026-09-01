@@ -21,7 +21,7 @@ import {ListToolsRequestSchema, CallToolRequestSchema}
 import {z} from 'zod';
 import {createRequire} from 'node:module';
 import {webcrypto} from 'node:crypto';
-import {DEFAULT_GROUPS, build_allowed_tools} from './tool_groups.js';
+import {GROUPS, DEFAULT_GROUPS, build_allowed_tools} from './tool_groups.js';
 
 // Node 18 does not expose Web Crypto as a global (it landed in Node 19).
 // Parts of the SDK reference `globalThis.crypto` directly and throw without
@@ -46,11 +46,17 @@ function fail(msg){
     process.exit(1);
 }
 
+// A credential is required against the hosted service. The free tier is per ACCOUNT — every
+// authenticated account gets a monthly allowance — so there is no credential-less mode to fall
+// back to: identity is what the allowance is metered against. A self-hosted server may still be
+// running open (WEBPARSE_ALLOW_UNAUTHENTICATED), so a custom MCP_URL only gets a warning.
 if (!api_token && mcp_url===DEFAULT_MCP_URL)
 {
     fail('Cannot run without the API_TOKEN env var.\n'
         +'Set it to your 2Captcha API key (from https://2captcha.com/setting) '
-        +'or the bearer token your server operator issued.');
+        +'or the bearer token your server operator issued.\n'
+        +'The free monthly allowance comes WITH an account — it is metered per '
+        +'account, so there is no anonymous mode. Signing up is free.');
 }
 if (!api_token)
 {
@@ -67,11 +73,12 @@ const custom_tools = process.env.TOOLS
 const {allowed, unknown_groups} = build_allowed_tools(group_ids, custom_tools);
 for (const id of unknown_groups)
     console.error(`[2captcha-mcp] warning: unknown tool group "${id}" — `
-        +'known groups: parsing, batch, browser, captcha, all');
+        +'known groups: parsing, batch, browser, browser_full, captcha, all');
 if (!group_ids.length && !custom_tools.length)
     console.error('[2captcha-mcp] default tool groups active '
-        +`(${DEFAULT_GROUPS.join(', ')}) — set GROUPS=all to expose `
-        +'everything, GROUPS=browser to add browser automation');
+        +`(${DEFAULT_GROUPS.join(', ')}) — set GROUPS=browser to add the 11 `
+        +'browser login tools, GROUPS=browser_full for all 23, GROUPS=all for '
+        +'everything');
 
 function parse_rate_limit(rate_limit_str){
     if (!rate_limit_str)
@@ -201,7 +208,16 @@ try {
 } catch(e){
     const msg = String(e?.message||e);
     if (/401|403|unauthorized|forbidden|invalid[_ ]token/i.test(msg))
-        fail(`Authentication to ${mcp_url} failed — check API_TOKEN.\n(${msg})`);
+    {
+        // Two different problems behind one status, and the fix differs: a token that was
+        // rejected, or no token at all against a server that requires one. Saying "check
+        // API_TOKEN" to someone who deliberately set none is the unhelpful half of that.
+        fail(api_token
+            ? `Authentication to ${mcp_url} failed — check API_TOKEN.\n(${msg})`
+            : `${mcp_url} requires a credential and none was sent. Set API_TOKEN to your `
+                +'2Captcha API key (https://2captcha.com/setting), or start the server with '
+                +`WEBPARSE_ALLOW_UNAUTHENTICATED=1 if it is your own.\n(${msg})`);
+    }
     fail(`Could not reach ${mcp_url}: ${msg}`);
 }
 
@@ -212,6 +228,25 @@ if (allowed)
     if (missing.length)
         console.error('[2captcha-mcp] note: enabled but not advertised by '
             +`the server (likely disabled server-side): ${missing.join(', ')}`);
+    // The other direction, and the one that bites silently. Tool SCHEMAS are pulled live, so this
+    // package cannot fall behind the server on what a tool looks like — but the group tables are
+    // static, so it absolutely can fall behind on which tools EXIST. It did: the server advertised
+    // discover_search_params for weeks while no group listed it, so every default client filtered
+    // out a working tool and nothing said so. A tool the server offers and no group claims is now
+    // a visible note.
+    const claimed = new Set(Object.values(GROUPS).flatMap(g=>g.tools));
+    const unclaimed = cached_tools.map(t=>t.name)
+        .filter(name=>!claimed.has(name) && name!=='session_stats');
+    if (unclaimed.length)
+    {
+        console.error('[2captcha-mcp] note: advertised by the server but in no '
+            +`tool group, so only GROUPS=all or TOOLS= reaches it: ${
+                unclaimed.join(', ')}`
+            // Only a packaging bug when it is OUR server: a self-hosted deployment with its own
+            // tools will legitimately advertise names this package has never heard of.
+            +(mcp_url===DEFAULT_MCP_URL
+                ? ' — please report this as a packaging bug' : ''));
+    }
 }
 
 // --- local stdio server ------------------------------------------------------

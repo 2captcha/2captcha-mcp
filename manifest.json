@@ -35,6 +35,7 @@
     {"name": "scrape_page", "description": "Fetch any URL and return its readable content as markdown (or raw HTML), defeating anti-bot protection with a tiered ladder: fast HTTP, TLS impersonation, rotating residential proxies, managed browser with CAPTCHA solving. No LLM cost."},
     {"name": "search_web", "description": "Find URLs for a query: ranked organic results with title, url and snippet."},
     {"name": "discover_urls", "description": "List URLs a site publishes in robots.txt and XML sitemaps, without crawling pages — a reviewable URL inventory for the batch tools."},
+    {"name": "discover_search_params", "description": "A site's real URL search parameters, read off one page — use it instead of guessing them."},
     {"name": "parse_marketplace", "description": "Parse a marketplace product page or search listing into structured JSON (title, price, rating, seller, stock, …), taking the cheapest tier that works: hidden JSON API, JSON-LD, learned selectors, then LLM extraction."},
     {"name": "extract", "description": "Extract data matching your own JSON Schema from any URL or from raw text you already hold, via LLM extraction (BYOK-aware)."},
     {"name": "get_account", "description": "Identity and capability probe: tenant, configured providers, spend counters. No network, no cost."},
@@ -67,6 +68,8 @@
     {"name": "browser_list_sessions", "description": "List saved login states."},
     {"name": "list_captcha_types", "description": "The catalogue of solvable CAPTCHA types with their required parameters — call before solve_captcha."},
     {"name": "solve_captcha", "description": "Solve a CAPTCHA of any supported type (reCAPTCHA, Turnstile, hCaptcha, image, …) and return the token/answer."},
+    {"name": "detect_captcha", "description": "Identify the CAPTCHA on a page from its HTML — type, sitekey, and the exact solve_captcha call for it. Free; never solves."},
+    {"name": "solve_captcha_on_page", "description": "Detect and solve the CAPTCHA on a page in YOUR browser, and return the JavaScript or cookie to apply the answer there."},
     {"name": "captcha_report", "description": "Report a solution as good or bad (a bad report refunds)."},
     {"name": "captcha_balance", "description": "Current 2Captcha balance in USD."},
     {"name": "session_stats", "description": "Tool usage during this session."}
@@ -75,14 +78,14 @@
     "api_token": {
       "type": "string",
       "title": "API Token",
-      "description": "Your 2Captcha API key from https://2captcha.com/setting",
+      "description": "Your 2Captcha API key from https://2captcha.com/setting. Signing up is free and includes a monthly allowance of calls.",
       "sensitive": true,
       "required": true
     },
     "groups": {
       "type": "string",
       "title": "Tool groups",
-      "description": "Comma-separated tool groups to enable: parsing, batch, browser, captcha, all (default: parsing,batch,captcha)",
+      "description": "Comma-separated tool groups to enable: parsing, batch, captcha, browser (11 login tools), browser_full (all 23), all (default: parsing,batch,captcha)",
       "required": false,
       "default": "parsing,batch,captcha"
     }
