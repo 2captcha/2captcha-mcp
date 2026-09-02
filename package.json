@@ -1,6 +1,6 @@
 {
     "name": "@2captcha/mcp",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "description": "Official 2Captcha MCP server — web scraping, marketplace parsing, structured extraction, browser automation and CAPTCHA solving for AI agents",
     "type": "module",
     "main": "./server.js",
