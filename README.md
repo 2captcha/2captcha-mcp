@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1>2Captcha MCP</h1>
+<h1>2Captcha MCP:      tools for AI agents, web scraping and browser automation</h1>
 
 <p><strong>Web scraping with anti-bot bypass, marketplace parsing to structured JSON, and CAPTCHA solving for AI agents over the Model Context Protocol.</strong></p>
 <p>Works with Claude, Cursor, coding agents, and any MCP-compatible client.</p>
