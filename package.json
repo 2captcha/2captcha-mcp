@@ -23,7 +23,7 @@
     "author": "2Captcha",
     "repository": {
         "type": "git",
-        "url": "https://github.com/2captcha/2captcha-mcp.git"
+        "url": "git+https://github.com/2captcha/2captcha-mcp.git"
     },
     "bugs": {
         "url": "https://github.com/2captcha/2captcha-mcp/issues"
