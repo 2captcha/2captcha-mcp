@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.2captcha/mcp",
-  "description": "2Captcha Web MCP: scraping with anti-bot bypass, marketplace parsing to JSON, browser automation and CAPTCHA solving for AI agents",
+  "description": "2Captcha MCP server for AI agents with web search, web scraping, browser automation, captcha solving, and scalable web data collection.",
   "repository": {
     "url": "https://github.com/2captcha/2captcha-mcp",
     "source": "github"

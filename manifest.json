@@ -3,7 +3,7 @@
   "name": "2captcha-mcp",
   "display_name": "2Captcha MCP",
   "version": "0.1.0",
-  "description": "Web scraping with anti-bot bypass, marketplace parsing to structured JSON, browser automation and CAPTCHA solving for AI agents",
+  "description": "2Captcha MCP server for AI agents with web search, web scraping, browser automation, captcha solving, and scalable web data collection.",
   "long_description": "The official 2Captcha Model Context Protocol (MCP) server gives LLMs and AI agents real-time access to web data behind anti-bot protection. Scrape any page through a tiered ladder (hidden JSON APIs, TLS-impersonating HTTP, rotating residential proxies, managed browser with CAPTCHA solving), parse marketplace product and search pages into clean structured JSON, extract arbitrary JSON-schema data from any URL, drive a real browser step by step, and solve any CAPTCHA type 2Captcha supports.",
   "author": {
     "name": "2Captcha",
@@ -17,7 +17,7 @@
   "homepage": "https://2captcha.com",
   "documentation": "https://github.com/2captcha/2captcha-mcp/blob/main/README.md",
   "support": "https://github.com/2captcha/2captcha-mcp/issues",
-  "keywords": ["web-scraping", "captcha", "data-extraction", "marketplace", "parsing", "proxy", "browser-automation", "anti-bot"],
+  "keywords": ["mcp", "mcp-server", "modelcontextprotocol", "ai-agents", "ai-integrations", "llm", "web-scraping", "scraping", "scraping-tools", "web-crawling", "web-data", "data-collection", "data-extraction", "structured-data", "browser-automation", "anti-bot-detection", "captcha", "marketplace"],
   "license": "MIT",
   "server": {
     "type": "node",
