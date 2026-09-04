@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1>2Captcha MCP:      tools for AI agents, web scraping and browser automation</h1>
+<h1>2Captcha MCP: tools for AI agents, web scraping and browser automation</h1>
 
 <p><strong>Web scraping with anti-bot bypass, marketplace parsing to structured JSON, and CAPTCHA solving for AI agents over the Model Context Protocol.</strong></p>
 <p>Works with Claude, Cursor, coding agents, and any MCP-compatible client.</p>
@@ -155,6 +155,24 @@ Add to `~/.cursor/mcp.json`:
     }
   }
 }
+```
+
+</details>
+
+<details>
+<summary><b>Codex CLI</b></summary>
+
+```bash
+codex mcp add 2captcha --env API_TOKEN=YOUR_API_TOKEN -- npx @2captcha/mcp
+```
+
+Or add it to `~/.codex/config.toml` by hand:
+
+```toml
+[mcp_servers.2captcha]
+command = "npx"
+args = ["@2captcha/mcp"]
+env = { API_TOKEN = "YOUR_API_TOKEN" }
 ```
 
 </details>
