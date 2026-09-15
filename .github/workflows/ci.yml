@@ -17,5 +17,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node }}
-      - run: npm install
+      # ci, not install: `npm install` rewrites package-lock.json in place,
+      # which is how the lock drifted away from package.json unnoticed.
+      - run: npm ci
       - run: npm test

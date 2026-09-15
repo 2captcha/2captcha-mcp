@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.2captcha/mcp",
-  "description": "2Captcha MCP server for AI agents with web search, web scraping, browser automation, captcha solving, and scalable web data collection.",
+  "description": "Web search, scraping past anti-bot walls, marketplace parsing, browser automation, CAPTCHA solving.",
   "repository": {
     "url": "https://github.com/2captcha/2captcha-mcp",
     "source": "github"
   },
-  "version": "0.1.0",
+  "version": "0.1.2",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@2captcha/mcp",
-      "version": "0.1.0",
+      "version": "0.1.2",
       "transport": {
         "type": "stdio"
       },
@@ -65,7 +65,25 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://mcp.2captcha.com/mcp"
+      "url": "https://mcp.2captcha.com/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Bearer authentication with your 2Captcha API key. The endpoint answers an unauthenticated connection with 401 invalid_token before any tool call, so a client that omits this header never reaches the tool list.",
+          "isRequired": true,
+          "isSecret": true,
+          "value": "Bearer {api_token}",
+          "variables": {
+            "api_token": {
+              "description": "Your 2Captcha API key (https://2captcha.com/setting), or the bearer token your server operator issued. Signing up is free and includes a monthly allowance of calls.",
+              "isRequired": true,
+              "isSecret": true,
+              "format": "string",
+              "placeholder": "your-2captcha-api-key"
+            }
+          }
+        }
+      ]
     }
   ]
 }
