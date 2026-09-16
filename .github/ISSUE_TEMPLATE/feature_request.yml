@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest something the bridge should do
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Worth knowing first: **tool schemas are fetched from the server at
+        runtime**, so a request for a new *tool* is a request against the
+        hosted service (support@2captcha.com), and it will appear here
+        automatically once it ships.
+
+        What this repo can change: which group a tool is in, the prompts, and
+        how the bridge connects, caches, filters and limits.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The task, not the solution — it often has a cheaper answer.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like it to do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What did you try instead?
+      description: >
+        Existing env vars (`GROUPS`, `TOOLS`, `MAX_SPEND_USD`,
+        `MAX_CONCURRENCY`, `RATE_LIMIT`), a different client, or the prompts.

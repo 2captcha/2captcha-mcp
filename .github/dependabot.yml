@@ -1,0 +1,38 @@
+version: 2
+
+updates:
+  # The SDK is the only runtime dependency and it is bundled at build time, so
+  # a bump here is a release decision, not a background chore — grouped into
+  # one PR a week rather than one per package.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      production:
+        patterns: ['*']
+        update-types: [minor, patch]
+    labels: [dependencies]
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: 'ci(deps)'
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, docker]
+    commit-message:
+      prefix: 'chore(docker)'
