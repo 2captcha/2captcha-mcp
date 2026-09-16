@@ -7,3 +7,12 @@ npm-debug.log*
 build/
 dist/
 *.mcpb
+
+# The esbuild single-file bundle (scripts/build.mjs). Built by prepack, so it
+# is in the npm tarball but never in git — committing generated code would
+# mean reviewing 744 KB of it on every dependency bump.
+/2captcha-mcp.mjs
+
+# Scratch files from the offline/bundle smoke checks
+/offline_check.mjs
+/offline_bundle.mjs

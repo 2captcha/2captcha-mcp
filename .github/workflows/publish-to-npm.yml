@@ -10,6 +10,7 @@ on:
 permissions:
   contents: write   # create the GitHub Release and upload the .mcpb bundle
   id-token: write   # OIDC, for npm provenance
+  packages: write   # push the container image to GHCR
 
 jobs:
   release:
@@ -104,8 +105,12 @@ jobs:
           echo "::error::mcp-publisher publish failed after 5 attempts"
           exit 1
 
+      # `npm publish` above ran prepack, so the bundle already exists; build
+      # again anyway so this step does not depend on that side effect.
       - name: Build the .mcpb bundle
-        run: npm run bundle
+        run: |
+          npm run build
+          npm run bundle
 
       - name: Create the GitHub Release with the bundle attached
         env:
@@ -117,3 +122,27 @@ jobs:
             --generate-notes \
             dist/*.mcpb \
           || gh release upload "$TAG" dist/*.mcpb --clobber
+
+      # The Dockerfile has existed since the first release and the image was
+      # never published anywhere, so the only way to get one was to build it
+      # yourself from a clone.
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Publish the container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            ghcr.io/${{ github.repository }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.licenses=MIT
