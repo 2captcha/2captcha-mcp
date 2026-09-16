@@ -35,15 +35,27 @@ npm run version:check
 2. `mcp-publisher validate server.json` — the registry's full JSON Schema. This
    is not a formality: the registry caps `description` at 100 characters and
    ours was 135, so the first submission would have been rejected.
-3. `npm publish --access public --provenance`.
+3. `npm publish --access public --provenance`. This runs `prepack`, which is
+   `npm run build` — so the tarball carries a freshly built `2captcha-mcp.mjs`
+   rather than whatever bundle happened to be on the runner. What ships is the
+   bundle; `server.js` is source only and is not in the tarball.
 4. `mcp-publisher publish` to the MCP Registry. This has to come *after* npm:
    the registry proves ownership by fetching the npm package and matching its
    `mcpName` field against `server.json`'s `name`. It retries for a couple of
    minutes because npm's CDN does not serve a new version instantly.
-5. `npm run bundle`, then a GitHub Release with `dist/*.mcpb` attached.
+5. `npm run build && npm run bundle`, then a GitHub Release with `dist/*.mcpb`
+   attached.
+6. The container image to `ghcr.io/2captcha/2captcha-mcp`, tagged with the
+   version and `latest`, for amd64 and arm64.
 
 A missing registry key downgrades step 4 to a warning — the npm release still
 happens.
+
+GHCR needs no secret: it authenticates with the workflow's own `GITHUB_TOKEN`
+via `packages: write`. The first push creates the package as **private** —
+make it public once at
+`https://github.com/orgs/2captcha/packages/container/2captcha-mcp/settings`,
+or the `docker run` line in the README will ask people to log in.
 
 ## One-time setup
 

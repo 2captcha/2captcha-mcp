@@ -8,8 +8,9 @@ export API_TOKEN=your-2captcha-api-key      # https://2captcha.com/setting
 node examples/01_marketplace_rows_for_nothing.mjs
 ```
 
-Node 18+. No dependencies beyond the `@modelcontextprotocol/sdk` this package already installs, so
-`npm install` in the repo root is all the setup there is. `MCP_URL` defaults to
+Node 18+. No dependencies beyond the `@modelcontextprotocol/sdk` this repo already builds against, so
+`npm ci` in the repo root is all the setup there is. (The published package *bundles* the SDK rather
+than installing it, which is why these run from a clone.) `MCP_URL` defaults to
 `https://mcp.2captcha.com/mcp`; set it if you run your own server.
 
 The [free monthly allowance](../README.md#free-tier-whats-included) covers all five several times
