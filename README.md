@@ -11,13 +11,31 @@
 </p>
 
 <p>
+  <a href="https://www.npmjs.com/package/@2captcha/mcp"><img alt="npm version" src="https://img.shields.io/npm/v/@2captcha/mcp?logo=npm&amp;color=cb3837"></a>
+  <a href="https://www.npmjs.com/package/@2captcha/mcp"><img alt="npm downloads" src="https://img.shields.io/npm/dm/@2captcha/mcp?color=cb3837&amp;label=downloads"></a>
+  <a href="https://github.com/2captcha/2captcha-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/2captcha/2captcha-mcp/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://registry.modelcontextprotocol.io"><img alt="MCP Registry" src="https://img.shields.io/badge/MCP_Registry-com.2captcha%2Fmcp-1f6feb"></a>
+  <img alt="Node" src="https://img.shields.io/node/v/@2captcha/mcp">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/npm/l/@2captcha/mcp?color=blue"></a>
+</p>
+
+<p>
+  <a href="cursor://anysphere.cursor-deeplink/mcp/install?name=2captcha&amp;config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyJAMmNhcHRjaGEvbWNwIl0sImVudiI6eyJBUElfVE9LRU4iOiJZT1VSX0FQSV9UT0tFTiJ9fQ=="><img alt="Install in Cursor" src="https://cursor.com/deeplink/mcp-install-dark.svg" height="28"></a>
+  <a href="https://insiders.vscode.dev/redirect/mcp/install?name=2captcha&amp;config=%7B%22name%22%3A%222captcha%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22%402captcha%2Fmcp%22%5D%2C%22env%22%3A%7B%22API_TOKEN%22%3A%22%24%7Binput%3Aapi_token%7D%22%7D%7D"><img alt="Install in VS Code" src="https://img.shields.io/badge/VS_Code-Install_server-0098FF?logo=visualstudiocode&amp;logoColor=white&amp;style=for-the-badge" height="28"></a>
+  <a href="https://github.com/2captcha/2captcha-mcp/releases/latest"><img alt="Claude Desktop bundle" src="https://img.shields.io/badge/Claude_Desktop-.mcpb_bundle-D97757?logo=claude&amp;logoColor=white&amp;style=for-the-badge" height="28"></a>
+</p>
+
+<p>
   <a href="#free-tier-whats-included">Free Tier</a> •
   <a href="#quick-start">Quick Start</a> •
+  <a href="#install">Install</a> •
   <a href="#tool-selection-groups">Tool Groups</a> •
   <a href="#tools-reference-40-tools">Tools</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#troubleshooting">Troubleshooting</a>
 </p>
+
+<p><b>English</b> • <a href="README.ru.md">Русский</a></p>
 
 </div>
 
@@ -105,6 +123,16 @@ Your token is your **2Captcha API key** ([account settings](https://2captcha.com
 
 The local server mirrors the hosted tool surface over stdio — use it with clients that can't send auth headers or only launch local MCP servers.
 
+---
+
+## Install
+
+Every client below needs the same two things: the command `npx @2captcha/mcp` with `API_TOKEN` in
+its environment, or — where the client speaks HTTP — the hosted URL plus an
+`Authorization: Bearer` header. Get a token at
+[2captcha.com/setting](https://2captcha.com/setting); signing up is free and brings the
+[monthly allowance](#free-tier-whats-included) with it.
+
 <details>
 <summary><b>Claude Code</b></summary>
 
@@ -124,7 +152,11 @@ claude mcp add 2captcha -e API_TOKEN=YOUR_API_TOKEN -- npx @2captcha/mcp
 <details>
 <summary><b>Claude Desktop</b></summary>
 
-Edit the config file (macOS `~/Library/Application Support/Claude/claude_desktop_config.json`, Windows `%APPDATA%\Claude\claude_desktop_config.json`) and restart the app:
+**One click:** download `2captcha-mcp-<version>.mcpb` from the
+[latest release](https://github.com/2captcha/2captcha-mcp/releases/latest) and open it. Claude
+Desktop installs it as an extension and asks for your API token — no Node, no npx, no config file.
+
+**Or by hand:** edit the config file (macOS `~/Library/Application Support/Claude/claude_desktop_config.json`, Windows `%APPDATA%\Claude\claude_desktop_config.json`) and restart the app:
 
 ```json
 {
@@ -204,6 +236,184 @@ API_TOKEN=YOUR_API_TOKEN npx @modelcontextprotocol/inspector npx @2captcha/mcp
 ```
 
 Or connect the Inspector directly to `https://mcp.2captcha.com/mcp` (transport **Streamable HTTP**, header `Authorization: Bearer YOUR_API_TOKEN`).
+
+</details>
+
+<details>
+<summary><b>Windsurf</b></summary>
+
+Add to `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "2captcha": {
+      "command": "npx",
+      "args": ["@2captcha/mcp"],
+      "env": { "API_TOKEN": "YOUR_API_TOKEN" }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Zed</b></summary>
+
+Add to Zed's `settings.json` (`cmd`/`ctrl` + `,`):
+
+```json
+{
+  "context_servers": {
+    "2captcha": {
+      "source": "custom",
+      "command": "npx",
+      "args": ["@2captcha/mcp"],
+      "env": { "API_TOKEN": "YOUR_API_TOKEN" }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Warp</b></summary>
+
+**Settings → AI → Manage MCP servers → + Add**, then paste:
+
+```json
+{
+  "2captcha": {
+    "command": "npx",
+    "args": ["@2captcha/mcp"],
+    "env": { "API_TOKEN": "YOUR_API_TOKEN" },
+    "start_on_launch": true
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Gemini CLI</b></summary>
+
+Add to `~/.gemini/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "2captcha": {
+      "command": "npx",
+      "args": ["@2captcha/mcp"],
+      "env": { "API_TOKEN": "YOUR_API_TOKEN" }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Continue</b></summary>
+
+Add to `~/.continue/config.yaml`:
+
+```yaml
+mcpServers:
+  - name: 2captcha
+    command: npx
+    args:
+      - "@2captcha/mcp"
+    env:
+      API_TOKEN: YOUR_API_TOKEN
+```
+
+</details>
+
+<details>
+<summary><b>LM Studio</b></summary>
+
+**Program → Install → Edit mcp.json**:
+
+```json
+{
+  "mcpServers": {
+    "2captcha": {
+      "command": "npx",
+      "args": ["@2captcha/mcp"],
+      "env": { "API_TOKEN": "YOUR_API_TOKEN" }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Cline / Roo Code</b></summary>
+
+**MCP Servers → Configure → Edit** `cline_mcp_settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "2captcha": {
+      "command": "npx",
+      "args": ["@2captcha/mcp"],
+      "env": { "API_TOKEN": "YOUR_API_TOKEN" },
+      "disabled": false
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Goose</b></summary>
+
+```bash
+goose session --with-extension "npx @2captcha/mcp"
+```
+
+Or add it permanently with `goose configure` → **Add Extension** → **Command-line Extension**,
+command `npx @2captcha/mcp`, environment variable `API_TOKEN`.
+
+</details>
+
+<details>
+<summary><b>n8n</b></summary>
+
+Use the **MCP Client Tool** node against the hosted server — no local process to manage:
+
+```
+Endpoint:       https://mcp.2captcha.com/mcp
+Transport:      HTTP Streamable
+Authentication: Header Auth
+Header name:    Authorization
+Header value:   Bearer YOUR_API_TOKEN
+```
+
+Point it at the `parsing` tools for scraping workflows; see
+[Tool Selection](#tool-selection-groups) for trimming the surface the agent sees.
+
+</details>
+
+<details>
+<summary><b>Any other MCP client</b></summary>
+
+The server is a plain stdio MCP server, so anything that can launch a command works:
+
+```
+command: npx
+args:    ["@2captcha/mcp"]
+env:     API_TOKEN=YOUR_API_TOKEN
+```
+
+Clients that speak Streamable HTTP can skip the process entirely and use
+`https://mcp.2captcha.com/mcp` with an `Authorization: Bearer` header.
 
 </details>
 

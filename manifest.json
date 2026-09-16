@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "2captcha-mcp",
   "display_name": "2Captcha MCP",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "2Captcha MCP server for AI agents with web search, web scraping, browser automation, captcha solving, and scalable web data collection.",
   "long_description": "The official 2Captcha Model Context Protocol (MCP) server gives LLMs and AI agents real-time access to web data behind anti-bot protection. Scrape any page through a tiered ladder (hidden JSON APIs, TLS-impersonating HTTP, rotating residential proxies, managed browser with CAPTCHA solving), parse marketplace product and search pages into clean structured JSON, extract arbitrary JSON-schema data from any URL, drive a real browser step by step, and solve any CAPTCHA type 2Captcha supports.",
   "author": {
@@ -21,10 +21,10 @@
   "license": "MIT",
   "server": {
     "type": "node",
-    "entry_point": "@2captcha/mcp",
+    "entry_point": "server/server.js",
     "mcp_config": {
-      "command": "npx",
-      "args": ["@2captcha/mcp"],
+      "command": "node",
+      "args": ["${__dirname}/server/server.js"],
       "env": {
         "API_TOKEN": "${user_config.api_token}",
         "GROUPS": "${user_config.groups}"

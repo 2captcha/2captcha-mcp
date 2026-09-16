@@ -9,7 +9,10 @@
     },
     "scripts": {
         "start": "node server.js",
-        "test": "node --test"
+        "test": "node --test",
+        "release": "node scripts/release.mjs",
+        "version:check": "node scripts/release.mjs --check",
+        "bundle": "node scripts/bundle.mjs"
     },
     "keywords": [
         "2captcha mcp",
@@ -68,7 +71,8 @@
         "tool_groups.js",
         "CHANGELOG.md",
         "manifest.json",
-        "server.json"
+        "server.json",
+        "README.ru.md"
     ],
     "mcpName": "com.2captcha/mcp"
 }
