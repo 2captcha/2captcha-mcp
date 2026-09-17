@@ -20,7 +20,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import * as esbuild from 'esbuild';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -65,7 +65,15 @@ export async function build({quiet = false} = {}){
     return {outfile, bytes: fs.statSync(outfile).size, inputs, leaked};
 }
 
-if (import.meta.url===`file://${process.argv[1]}`)
+// pathToFileURL, not `file://${argv[1]}`: argv[1] is a PATH, and on
+// Windows that reads C:\...\build.mjs against a file:///C:/.../build.mjs
+// import.meta.url, which never matches. The guard then silently fails
+// closed — `npm run build` exited 0 and produced nothing, and since
+// prepack is this script, `npm pack` on Windows tarballed whatever stale
+// bundle was lying around. Releases run on Linux, so nothing published
+// was affected; the local build was just quietly a no-op.
+if (process.argv[1]
+    && import.meta.url===pathToFileURL(process.argv[1]).href)
 {
     const {bytes, inputs, leaked} = await build();
     console.log(`\n${OUTFILE} — ${(bytes/1024).toFixed(0)} KB from `

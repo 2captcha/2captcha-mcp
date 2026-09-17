@@ -32,12 +32,20 @@ test('the HTTP server transports and their dependencies are tree-shaken out',
             +'express and the qs advisory came back last time.');
     });
 
+// A band around the size it actually is (~744 KB), not a number large enough
+// to never fire. The 2 MB ceiling this replaces let a zod 3 -> 4 bump add
+// 514 KB — two thirds again — and still pass, which is exactly the regression
+// the bundle exists to prevent. Widen it deliberately, with the reason, when
+// the bundle legitimately grows.
+const MAX_BYTES = 900*1024;
+
 test('the bundle is one self-contained file of a sane size', ()=>{
-    assert.ok(built.bytes>100*1024, 'suspiciously small — did it inline '
+    assert.ok(built.bytes>600*1024, 'suspiciously small — did it inline '
         +'anything at all?');
-    assert.ok(built.bytes<2*1024*1024,
-        `${(built.bytes/1024/1024).toFixed(1)} MB is far more than the ~750 KB `
-        +'this should be; something large got pulled back in');
+    assert.ok(built.bytes<MAX_BYTES,
+        `${(built.bytes/1024).toFixed(0)} KB is over the ${MAX_BYTES/1024} KB `
+        +'ceiling; something large got pulled back in. Check the dependency '
+        +'that moved before raising this.');
 });
 
 test('the bundle has exactly one shebang, on the first line', ()=>{
