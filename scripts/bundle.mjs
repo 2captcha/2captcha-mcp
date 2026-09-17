@@ -18,6 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {OUTFILE} from './build.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const stage = path.join(root, 'build', 'mcpb');
@@ -27,12 +28,6 @@ const dist = path.join(root, 'dist');
 // rejecting a bundle we know is good, in the middle of a release.
 const MCPB = '@anthropic-ai/mcpb@2.1.2';
 
-// Everything the server needs at runtime, relative to the repo root, mapped to
-// its path inside the bundle.
-const SERVER_FILES = {
-    'server.js': 'server/server.js',
-    'tool_groups.js': 'server/tool_groups.js',
-};
 const DOC_FILES = ['README.md', 'LICENSE', 'CHANGELOG.md'];
 
 function log(msg){
@@ -51,11 +46,10 @@ function main(){
             +`is ${pkg.version} — run: node scripts/release.mjs <version>`);
         return 1;
     }
-    const modules = path.join(root, 'node_modules');
-    if (!fs.existsSync(modules))
+    const built = path.join(root, OUTFILE);
+    if (!fs.existsSync(built))
     {
-        console.error('node_modules is missing — run `npm ci` first. The '
-            +'bundle ships its dependencies, it does not fetch them.');
+        console.error(`${OUTFILE} is missing — run \`npm run build\` first.`);
         return 1;
     }
 
@@ -63,8 +57,10 @@ function main(){
     fs.mkdirSync(path.join(stage, 'server'), {recursive: true});
     fs.mkdirSync(dist, {recursive: true});
 
-    for (const [from, to] of Object.entries(SERVER_FILES))
-        fs.copyFileSync(path.join(root, from), path.join(stage, to));
+    // One file, not a tree. Before esbuild this copied the whole of
+    // node_modules — 2,161 files and 9.6 MB unpacked — because the server was
+    // shipped as source and had to find its imports at runtime.
+    fs.copyFileSync(built, path.join(stage, 'server', 'server.js'));
     for (const file of DOC_FILES)
     {
         if (fs.existsSync(path.join(root, file)))
@@ -73,17 +69,12 @@ function main(){
     fs.copyFileSync(path.join(root, 'manifest.json'),
         path.join(stage, 'manifest.json'));
 
-    // The runtime deps. `npm ci --omit=dev` upstream of this keeps it to what
-    // the server actually imports; there are no devDependencies today, so a
-    // plain `npm ci` gives the same tree.
-    log('copying node_modules …');
-    fs.cpSync(modules, path.join(stage, 'server', 'node_modules'),
-        {recursive: true, dereference: true});
-    // A nested package.json is what makes node resolve the copied modules and
-    // read server.js as ESM once it is running from inside the bundle.
+    // The bundle carries no imports, but it still needs `type: module` for
+    // node to read it as ESM, and its own package.json to read the version
+    // out of at runtime.
     fs.writeFileSync(path.join(stage, 'server', 'package.json'),
         JSON.stringify({name: pkg.name, version: pkg.version,
-            type: 'module', dependencies: pkg.dependencies}, null, 2)+'\n');
+            type: 'module'}, null, 2)+'\n');
 
     const out = path.join(dist, `2captcha-mcp-${pkg.version}.mcpb`);
     fs.rmSync(out, {force: true});

@@ -21,3 +21,45 @@ jobs:
       # which is how the lock drifted away from package.json unnoticed.
       - run: npm ci
       - run: npm test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run lint
+
+  # The published artifact is the bundle, not server.js, so a green test suite
+  # against the source proves less than it looks. Build it and run the thing
+  # that actually ships.
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+      - name: The bundle starts and reports its version
+        run: |
+          VERSION="$(node 2captcha-mcp.mjs --version)"
+          PKG="$(npm pkg get version | tr -d '"')"
+          if [ "$VERSION" != "$PKG" ]; then
+            echo "::error::bundle reports $VERSION, package.json says $PKG"
+            exit 1
+          fi
+          node 2captcha-mcp.mjs --help > /dev/null
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build the image and run it as the non-root user it ships with
+        run: |
+          docker build -t 2captcha-mcp:ci .
+          test "$(docker run --rm 2captcha-mcp:ci --version)" = "$(npm pkg get version | tr -d '"')"
+          test "$(docker run --rm --entrypoint id 2captcha-mcp:ci -un)" = "node"

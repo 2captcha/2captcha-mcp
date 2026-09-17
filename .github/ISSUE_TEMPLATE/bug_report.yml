@@ -1,0 +1,71 @@
+name: Bug report
+description: Something in the bridge does not behave as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not report security issues here — see
+        [SECURITY.md](https://github.com/2captcha/2captcha-mcp/blob/main/SECURITY.md).
+
+        If a **tool** returned wrong data (a bad scrape, a missed CAPTCHA, a
+        wrong price), that is the hosted service rather than this package —
+        support@2captcha.com will get to it faster. This tracker is for the
+        bridge: installing it, starting it, tool visibility, auth, caching,
+        limits.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `npx @2captcha/mcp --version`
+      placeholder: 0.1.2
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: OS, Node version and MCP client
+      placeholder: macOS 15.2, Node 22.11, Claude Desktop 0.9.3
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. GROUPS=all npx @2captcha/mcp
+        2. Ask the client to list tools
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Server output
+      description: >
+        Everything the server printed, which goes to stderr. In Claude Desktop
+        these are in the MCP logs; from a terminal, run the command directly.
+        **Remove your API token before pasting.**
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I removed my API token from anything pasted above
+          required: true
+        - label: I am using `@2captcha/mcp`, not the unaffiliated `2captcha-mcp` package
+          required: true

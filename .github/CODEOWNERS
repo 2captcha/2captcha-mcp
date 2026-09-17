@@ -1,0 +1,17 @@
+# Review is required from a code owner on everything here.
+#
+# An individual rather than a team, because a CODEOWNERS entry naming a team
+# that does not exist is silently ignored by GitHub — the rule looks enforced
+# and is not. Replace this with @2captcha/<team> once such a team exists, and
+# check the repository's "Code owners" warning banner afterwards.
+* @a1410453
+
+# The paths where a mistake ships to every user at once rather than showing up
+# in someone's next run: credentials, publishing, and the generated artifact
+# people install.
+/.github/workflows/  @a1410453
+/scripts/            @a1410453
+/server.json         @a1410453
+/manifest.json       @a1410453
+/package.json        @a1410453
+/SECURITY.md         @a1410453

@@ -1,6 +1,72 @@
 # Changelog
 
 ## Unreleased
+
+### Reliability
+
+- **The server no longer exits when the network is down.** Connecting to the remote was done eagerly
+  at startup and any failure was `process.exit(1)`, so a laptop waking on a dead Wi-Fi came back with
+  the server marked broken in the client and stayed that way until someone restarted it by hand. The
+  stdio server now comes up first, the remote is dialled behind it, and the tool list is cached on
+  disk so an offline start still serves real schemas. The list repopulates by `listChanged`
+  notification once the connection returns. A **rejected token** still exits, because that one will
+  not fix itself.
+- **Retries with backoff on `429` and `5xx`**, honouring `Retry-After`. These live in a custom
+  `fetch` rather than around the SDK call, because that is the only layer that can see the status
+  code and the header — above it, a 429 and a 503 both arrive as prose in an `Error` message.
+  Previously a 502 from the edge reached the agent as "this tool does not work" when the answer was
+  to wait a second.
+- **`tools/list` is served from a 60-second cache** instead of a network round trip, with a 30-second
+  timeout, on every single call. Clients re-list constantly; this takes a hop off the path walked on
+  every turn.
+
+### New
+
+- **Prompts.** Six recipes drawn from `examples/` — marketplace to table, sitemap to dataset, solving
+  a CAPTCHA in your own browser, logging in past one, comparing a product across two markets, and
+  auditing what a call cost. A tool list tells an agent what it *can* do; these tell it what is worth
+  doing and in what order, which is the part a first-time user does not know.
+- **Resources** are proxied from the service, and `listChanged` is now declared for tools, prompts
+  and resources.
+- **`MAX_SPEND_USD`** — a cap measured from the cost each result reports, written as `5` or `5/1h`.
+  Counting calls was a weak guard for a tool that spends money: one `parse_pages` over 500 URLs costs
+  more than a hundred `scrape_page` calls.
+- **`MAX_CONCURRENCY`** — caps calls in flight, so an agent fanning out over a URL list stops opening
+  one connection per URL.
+- **`--help` and `--version`**, which work with no token set, and **`CACHE_DIR`** to relocate the
+  offline cache.
+
+### Packaging
+
+- **Bundled with esbuild into one file.** The SDK drags express, hono, cors and ajv behind it because
+  it also ships server-side HTTP transports this bridge never uses. Tree-shaking drops them, so
+  `npx @2captcha/mcp` now installs **one package, ~170 KB**, rather than a 23 MB dependency tree —
+  and the runtime dependency list, along with anything `npm audit` could find in it, is now empty.
+  The `.mcpb` bundle fell from 3.1 MB across 2,165 files to 164 KB across 6.
+- **Container image published to GHCR** on each release (amd64 + arm64), multi-stage, running as the
+  non-root `node` user. The Dockerfile had existed since the first release and the image was never
+  published anywhere.
+
+### Repo
+
+- ESLint, pinned to the style the repo already had. Deliberately **no Prettier**: it cannot express
+  this codebase's brace and spacing conventions, so adding it would reformat every line and make
+  every later diff unreadable. One rule worth naming — `console.log` is banned in `server.js`,
+  because stdout *is* the MCP transport.
+- Dependabot, `SECURITY.md`, `CONTRIBUTING.md`, issue and PR templates, `CODEOWNERS`.
+- CI gained lint, a build-and-run check against the bundle that actually ships, and a Docker job
+  asserting the image runs as a non-root user.
+- **Tests: 22 → 70.** The gaps the audit named are closed — rate limiting, reconnect and retry
+  behaviour, the missing-`API_TOKEN` path, `sanitize_tool` edge cases, the unknown-group warning —
+  plus offline start, disk-cache round-trips, `Retry-After`, the spend and concurrency caps
+  (including a control test proving calls really do overlap without a cap), prompt rendering, and
+  what is and is not in the bundle.
+- README, in both languages, gained a **"What leaves your machine"** section: where data goes, what
+  travels with a tool call, what the browser groups store server-side, what is kept locally, and how
+  to get rid of it.
+
+### From sprint 1
+
 - **Published to the MCP Registry.** `server.json` is now pushed by `mcp-publisher` on each
   release tag, so the server is discoverable from the client and catalogue listings that read the
   registry rather than only from npm.

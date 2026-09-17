@@ -3,16 +3,19 @@
     "version": "0.1.2",
     "description": "2Captcha MCP server for AI agents with web search, web scraping, browser automation, captcha solving, and scalable web data collection.",
     "type": "module",
-    "main": "./server.js",
+    "main": "./2captcha-mcp.mjs",
     "bin": {
-        "2captcha-mcp": "./server.js"
+        "2captcha-mcp": "./2captcha-mcp.mjs"
     },
     "scripts": {
         "start": "node server.js",
         "test": "node --test",
         "release": "node scripts/release.mjs",
         "version:check": "node scripts/release.mjs --check",
-        "bundle": "node scripts/bundle.mjs"
+        "bundle": "node scripts/bundle.mjs",
+        "build": "node scripts/build.mjs",
+        "prepack": "node scripts/build.mjs",
+        "lint": "eslint ."
     },
     "keywords": [
         "2captcha mcp",
@@ -59,20 +62,22 @@
     "engines": {
         "node": ">=18.0.0"
     },
-    "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.21.2",
-        "zod": "^3.24.2"
-    },
     "publishConfig": {
         "access": "public"
     },
     "files": [
-        "server.js",
-        "tool_groups.js",
+        "2captcha-mcp.mjs",
         "CHANGELOG.md",
         "manifest.json",
         "server.json",
         "README.ru.md"
     ],
-    "mcpName": "com.2captcha/mcp"
+    "mcpName": "com.2captcha/mcp",
+    "devDependencies": {
+        "@eslint/js": "^9.39.5",
+        "@modelcontextprotocol/sdk": "^1.21.2",
+        "esbuild": "^0.25.12",
+        "eslint": "^9.39.5",
+        "zod": "^3.24.2"
+    }
 }

@@ -417,6 +417,34 @@ Clients that speak Streamable HTTP can skip the process entirely and use
 
 </details>
 
+<details>
+<summary><b>Docker</b></summary>
+
+Published to GHCR on every release, for amd64 and arm64:
+
+```bash
+docker run --rm -i -e API_TOKEN=YOUR_API_TOKEN ghcr.io/2captcha/2captcha-mcp:latest
+```
+
+`-i` matters: the server speaks MCP over stdin/stdout. In a client config:
+
+```json
+{
+  "mcpServers": {
+    "2captcha": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "-e", "API_TOKEN", "ghcr.io/2captcha/2captcha-mcp:latest"],
+      "env": { "API_TOKEN": "YOUR_API_TOKEN" }
+    }
+  }
+}
+```
+
+The image runs as the non-root `node` user and contains only the bundled
+server — no package manager, no dependency tree.
+
+</details>
+
 ### Try it
 
 Ask your agent:
@@ -599,12 +627,46 @@ Set `GROUPS=browser_full` for the complete 23-tool surface — adding history (`
 | `MCP_URL` | no | `https://mcp.2captcha.com/mcp` | The remote MCP endpoint — set it for a self-hosted server |
 | `POLLING_TIMEOUT` | no | `600` | Per-tool-call timeout in seconds (renders, batch jobs and CAPTCHA solves can take minutes) |
 | `RATE_LIMIT` | no | — | Client-side call limiter, e.g. `100/1h` or `50/30m` |
+| `MAX_SPEND_USD` | no | — | Spend cap, measured from what each call reports it cost: `5` for the whole session, or `5/1h` for a rolling window |
+| `MAX_CONCURRENCY` | no | — | Maximum tool calls in flight at once. Without it, an agent fanning out over a URL list opens one connection per URL |
+| `CACHE_DIR` | no | OS cache dir | Where the offline tool-list cache is kept |
+
+`MAX_SPEND_USD` is the one worth setting if you set only one. A call limit bounds the wrong quantity — a single `parse_pages` over 500 URLs costs more than a hundred `scrape_page` calls — so `RATE_LIMIT` protects you from a runaway loop while `MAX_SPEND_USD` protects you from a runaway bill. A call's cost is only known once the server answers, so the cap is checked against what has already been spent: it bounds the overshoot to one call rather than pretending to be exact.
+
+### Command line
+
+```bash
+npx @2captcha/mcp --version
+npx @2captcha/mcp --help      # every variable above, with its default
+```
+
+---
+
+## What leaves your machine
+
+Worth settling before this reaches a security review, because the honest answer is "more than a local tool, less than a browser extension".
+
+**Where it goes.** One place: `MCP_URL` — `https://mcp.2captcha.com/mcp` unless you point it at your own server. No telemetry, no analytics, no third party. The bridge opens no listening port.
+
+**What travels with a tool call.** That tool's arguments, forwarded verbatim and neither inspected nor logged by the bridge. For `scrape_page` that is a URL. For `detect_captcha` and `solve_captcha_on_page` it is **the page HTML you pass in** — and HTML taken from a signed-in session contains whatever that page contains. For `extract` it is your schema and any text you supply directly.
+
+**Your API token** goes to `MCP_URL` as a bearer token and nowhere else. This package never writes it to disk.
+
+**What the browser groups store.** `browser` and `browser_full` drive a browser *on the server*, and `browser_save_session` deliberately keeps that browser's cookies server-side so a later run can skip the login. That is the feature, and it is also the part to think hardest about: a saved session is a live credential for that site, held by us. `browser_list_sessions` shows what exists. **Both groups are opt-in and off by default.**
+
+The page-side CAPTCHA tools — `detect_captcha` and `solve_captcha_on_page`, both on by default — exist partly to avoid this. They read HTML from *your* browser and hand back the JavaScript or cookie to apply in *your* session, so the session never moves.
+
+**What stays on your machine.** One file: the offline tool-list cache — tool names and JSON schemas, keyed by endpoint, under `CACHE_DIR` (default `~/Library/Caches/2captcha-mcp` on macOS, `$XDG_CACHE_HOME/2captcha-mcp` on Linux, `%LOCALAPPDATA%\2captcha-mcp` on Windows). No arguments, no results, no credentials. Deleting it costs one round trip on the next start.
+
+**Retention and removal.** Request data is retained server-side per the [2Captcha privacy policy](https://2captcha.com/privacy-policy). To drop a stored browser session, load it and clear it, or ask support@2captcha.com. To remove everything local, delete the cache directory; to invalidate access, rotate your key at [2captcha.com/setting](https://2captcha.com/setting).
 
 ---
 
 ## How it works
 
-This package is a thin stdio bridge to the remote service: tool schemas are fetched live from the server at startup and on every `tools/list`, so the package never drifts from the deployed tool surface, and new server-side tools appear automatically under `GROUPS=all`. Calls are forwarded verbatim — including `structuredContent`, images (screenshots), and tool errors — with automatic reconnection if the connection drops mid-session.
+This package is a thin stdio bridge to the remote service: tool schemas are fetched live from the server and held for 60 seconds, so the package never drifts from the deployed tool surface, and new server-side tools appear automatically under `GROUPS=all`. Calls are forwarded verbatim — including `structuredContent`, images (screenshots), and tool errors — with automatic reconnection if the connection drops mid-session, and retries with exponential backoff on `429` and `5xx` responses, honouring `Retry-After`.
+
+**It starts whether or not the network does.** The tool list is cached on disk, so a laptop that wakes on a dead Wi-Fi still registers a working server and repopulates its tools by notification once the connection comes back — instead of the client marking the server broken until you restart it by hand. The one failure it still refuses to start on is a rejected token, because that one will not fix itself.
 
 Costs are metered server-side against your token: scraping spends proxy/browser resources, `solve_captcha` spends one solve per call, and the LLM extraction in `parse_marketplace`/`extract` bills your own LLM key when you have one vaulted (BYOK), the server default otherwise. Pass `include_meta: true` to the parsing tools to see exactly what a call spent — this service is the only one that reports the price of a call to the agent making it, rather than only in a dashboard afterwards.
 
