@@ -117,13 +117,13 @@ npm ci
 npm run bundle          # → dist/2captcha-mcp-<version>.mcpb
 ```
 
-The bundle is self-contained: `server.js`, `tool_groups.js` and the production
-`node_modules` are staged under `server/` inside it, and `manifest.json` runs
-them with the host's own node. It deliberately does not shell out to
-`npx @2captcha/mcp` at install time — that needs a network round trip and an
-`npx` on `PATH`, and `spawn npx ENOENT` is already a troubleshooting entry in
-our own README.
+`npm run bundle` requires `npm run build` first and says so if the bundle is
+missing: what it stages under `server/` is the esbuild output, not the source
+tree. The result is self-contained and `manifest.json` runs it with the host's
+own node. It deliberately does not shell out to `npx @2captcha/mcp` at install
+time — that needs a network round trip and an `npx` on `PATH`, and
+`spawn npx ENOENT` is already a troubleshooting entry in our own README.
 
-Because the dependency tree is ~26 MB, so is the bundle. Bundling `server.js`
-with esbuild first would cut that by an order of magnitude — the SDK pulls in
-`express`, `hono`, `cors` and `ajv`, none of which this bridge uses.
+Staging the bundle rather than `node_modules` is what took the `.mcpb` from
+3.1 MB across 2,165 files to **172 KB across 6**, since the SDK's `express`,
+`hono` and `cors` are tree-shaken out on the way.
