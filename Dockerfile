@@ -1,6 +1,6 @@
 # Two stages, because the bridge is bundled: the toolchain that builds the
 # single file has no reason to exist in the image that runs it.
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ COPY server.js tool_groups.js prompts.js ./
 COPY scripts/build.mjs ./scripts/build.mjs
 RUN node scripts/build.mjs
 
-FROM node:22-alpine
+FROM node:26-alpine
 
 WORKDIR /app
 ENV NODE_ENV=production
