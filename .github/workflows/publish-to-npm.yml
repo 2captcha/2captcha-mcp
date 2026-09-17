@@ -127,7 +127,7 @@ jobs:
       # never published anywhere, so the only way to get one was to build it
       # yourself from a clone.
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
