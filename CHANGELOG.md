@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+## 0.1.3 — 2026-09-17
 ### Reliability
 
 - **The server no longer exits when the network is down.** Connecting to the remote was done eagerly
@@ -56,6 +57,15 @@
 - Dependabot, `SECURITY.md`, `CONTRIBUTING.md`, issue and PR templates, `CODEOWNERS`.
 - CI gained lint, a build-and-run check against the bundle that actually ships, and a Docker job
   asserting the image runs as a non-root user.
+- **Three Windows fixes in the build and test tooling**, all of which made a broken state look
+  like a working one. `npm run build` guarded its entry point with
+  ``import.meta.url === `file://${process.argv[1]}` `` — argv[1] is a path, so on Windows that never
+  matched and the script exited 0 having written nothing; since `prepack` is that script, `npm pack`
+  there tarballed whatever stale bundle was in the tree. The bundle-size assertion allowed anything
+  under 2 MB while describing the bundle as "~750 KB", so a dependency adding two thirds again would
+  have passed; the ceiling is now 900 KB. And the test asserting the bundle's execute bit cannot
+  pass on NTFS, which had three of the six CI test jobs red for a bundle that was fine — it is now
+  skipped on `win32` and still enforced everywhere the bit means anything.
 - **Tests: 22 → 70.** The gaps the audit named are closed — rate limiting, reconnect and retry
   behaviour, the missing-`API_TOKEN` path, `sanitize_tool` edge cases, the unknown-group warning —
   plus offline start, disk-cache round-trips, `Retry-After`, the spend and concurrency caps
