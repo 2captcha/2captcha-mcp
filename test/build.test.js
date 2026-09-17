@@ -49,10 +49,16 @@ test('the bundle has exactly one shebang, on the first line', ()=>{
     assert.notEqual(lines[1], '#!/usr/bin/env node');
 });
 
-test('the bundle is executable', ()=>{
-    assert.ok(fs.statSync(built.outfile).mode & 0o111,
-        'npx runs this directly; without the execute bit it does not start');
-});
+// NTFS has no execute bit, so the chmod in build.mjs is a no-op there and
+// stat always reports 0o666 — the assertion cannot hold on Windows, and the
+// CI matrix runs this suite on windows-latest. The bit only matters on the
+// POSIX boxes that publish and that run `npx`, which is where this still runs.
+test('the bundle is executable',
+    {skip: process.platform==='win32' && 'no execute bit on NTFS'}, ()=>{
+        assert.ok(fs.statSync(built.outfile).mode & 0o111,
+            'npx runs this directly; without the execute bit it does not '
+            +'start');
+    });
 
 test('the built bundle runs and reports the same version as package.json',
     ()=>{
