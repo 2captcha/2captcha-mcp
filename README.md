@@ -1,4 +1,8 @@
 <div align="center">
+  
+  <a href="https://2captcha.com/">
+    <img src="https://github.com/user-attachments/assets/041c2d01-0954-49dd-b0a0-8a0ddc5771aa" alt="2Captcha">
+  </a>
 
 <h1>2Captcha MCP: tools for AI agents, web scraping and browser automation</h1>
 
@@ -19,11 +23,7 @@
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/npm/l/@2captcha/mcp?color=blue"></a>
 </p>
 
-<p>
-  <a href="cursor://anysphere.cursor-deeplink/mcp/install?name=2captcha&amp;config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyJAMmNhcHRjaGEvbWNwIl0sImVudiI6eyJBUElfVE9LRU4iOiJZT1VSX0FQSV9UT0tFTiJ9fQ=="><img alt="Install in Cursor" src="https://cursor.com/deeplink/mcp-install-dark.svg" height="28"></a>
-  <a href="https://insiders.vscode.dev/redirect/mcp/install?name=2captcha&amp;config=%7B%22name%22%3A%222captcha%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22%402captcha%2Fmcp%22%5D%2C%22env%22%3A%7B%22API_TOKEN%22%3A%22%24%7Binput%3Aapi_token%7D%22%7D%7D"><img alt="Install in VS Code" src="https://img.shields.io/badge/VS_Code-Install_server-0098FF?logo=visualstudiocode&amp;logoColor=white&amp;style=for-the-badge" height="28"></a>
-  <a href="https://github.com/2captcha/2captcha-mcp/releases/latest"><img alt="Claude Desktop bundle" src="https://img.shields.io/badge/Claude_Desktop-.mcpb_bundle-D97757?logo=claude&amp;logoColor=white&amp;style=for-the-badge" height="28"></a>
-</p>
+
 
 <p>
   <a href="#free-tier-whats-included">Free Tier</a> •
