@@ -1,7 +1,7 @@
 <div align="center">
   
   <a href="https://2captcha.com/">
-    <img src="https://github.com/user-attachments/assets/041c2d01-0954-49dd-b0a0-8a0ddc5771aa" alt="2Captcha">
+    <img src="https://github.com/user-attachments/assets/5cdc25cd-8148-424b-8cef-9349720b1252" alt="2Captcha">
   </a>
 
 <h1>2Captcha MCP: tools for AI agents, web scraping and browser automation</h1>
