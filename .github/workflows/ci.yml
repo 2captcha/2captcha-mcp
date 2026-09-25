@@ -63,3 +63,12 @@ jobs:
           docker build -t 2captcha-mcp:ci .
           test "$(docker run --rm 2captcha-mcp:ci --version)" = "$(npm pkg get version | tr -d '"')"
           test "$(docker run --rm --entrypoint id 2captcha-mcp:ci -un)" = "node"
+
+  # The registry's full JSON Schema, checked on every PR rather than first at
+  # release time, when a rejection means npm already has the version.
+  registry-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-mcp-publisher
+      - run: mcp-publisher validate server.json

@@ -1,0 +1,117 @@
+name: MCP Registry
+
+# Publishes server.json to registry.modelcontextprotocol.io as com.2captcha/mcp.
+#
+# Called by the release workflow once npm has the new version, and runnable by
+# hand (Actions → MCP Registry → Run workflow → pick the release *tag*) to
+# retry a registry publish without re-releasing anything else. Re-running for a
+# version the registry already has is a no-op, not a failure.
+#
+# This is its own job, behind the `mcp-registry` environment, because the DNS
+# signing key can publish anything under com.2captcha/* — the key should be
+# reachable only from reviewed release tags, never from the npm install or
+# build steps of the release job. Setup: docs/RELEASING.md.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to the MCP Registry
+    runs-on: ubuntu-latest
+    environment: mcp-registry
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # A dispatch from a branch would publish whatever server.json says on
+      # that branch, which may name an npm version that was never released.
+      - name: Check this is a release tag and server.json agrees with it
+        id: meta
+        run: |
+          if [[ "$GITHUB_REF" != refs/tags/v* ]]; then
+            echo "::error::Run this from a release tag (v*), not $GITHUB_REF."
+            exit 1
+          fi
+          TAG="${GITHUB_REF#refs/tags/v}"
+          NAME="$(jq -r .name server.json)"
+          VERSION="$(jq -r .version server.json)"
+          if [ "$VERSION" != "$TAG" ]; then
+            echo "::error::Tag v$TAG does not match server.json version $VERSION"
+            exit 1
+          fi
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name_url=$(jq -rn --arg n "$NAME" '$n|@uri')" >> "$GITHUB_OUTPUT"
+          echo "npm_url=https://registry.npmjs.org/$(jq -r '.packages[] | select(.registryType=="npm") | "\(.identifier)/\(.version)"' server.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if the registry already has this version
+        id: existing
+        env:
+          URL: https://registry.modelcontextprotocol.io/v0.1/servers/${{ steps.meta.outputs.name_url }}/versions/${{ steps.meta.outputs.version }}
+        run: |
+          STATUS="$(curl -s -o /dev/null -w '%{http_code}' "$URL")"
+          if [ "$STATUS" = 200 ]; then
+            echo "::notice::${{ steps.meta.outputs.name }} ${{ steps.meta.outputs.version }} is already in the registry — nothing to do."
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up mcp-publisher
+        if: steps.existing.outputs.published != 'true'
+        uses: ./.github/actions/setup-mcp-publisher
+
+      - name: Validate server.json against the registry schema
+        if: steps.existing.outputs.published != 'true'
+        run: mcp-publisher validate server.json
+
+      # The registry proves we own the npm package by fetching it and matching
+      # its `mcpName` against server.json's name. npm's CDN takes a moment to
+      # serve a just-published version, so wait for it here, explicitly,
+      # rather than retrying the publish and hiding real rejections.
+      - name: Wait until npm serves the package with a matching mcpName
+        if: steps.existing.outputs.published != 'true'
+        env:
+          NPM_URL: ${{ steps.meta.outputs.npm_url }}
+          NAME: ${{ steps.meta.outputs.name }}
+        run: |
+          for attempt in $(seq 1 20); do
+            MCP_NAME="$(curl -fsSL "$NPM_URL" 2>/dev/null | jq -r '.mcpName // empty')" || true
+            if [ "$MCP_NAME" = "$NAME" ]; then
+              echo "npm serves $NPM_URL with mcpName $MCP_NAME"
+              exit 0
+            fi
+            if [ -n "$MCP_NAME" ]; then
+              echo "::error::$NPM_URL has mcpName '$MCP_NAME', server.json says '$NAME'"
+              exit 1
+            fi
+            echo "attempt $attempt: $NPM_URL not served yet; retrying in 15s"
+            sleep 15
+          done
+          echo "::error::$NPM_URL never appeared on npm — was the npm publish successful?"
+          exit 1
+
+      - name: Log in with the com.2captcha DNS key and publish
+        if: steps.existing.outputs.published != 'true'
+        env:
+          MCP_DNS_PRIVATE_KEY: ${{ secrets.MCP_REGISTRY_DNS_PRIVATE_KEY }}
+        run: |
+          if [ -z "$MCP_DNS_PRIVATE_KEY" ]; then
+            echo "::error::MCP_REGISTRY_DNS_PRIVATE_KEY is not set on the mcp-registry environment. See docs/RELEASING.md."
+            exit 1
+          fi
+          mcp-publisher login dns --domain 2captcha.com --private-key "$MCP_DNS_PRIVATE_KEY"
+          mcp-publisher publish server.json
+
+      - name: Confirm the registry serves the new version
+        if: steps.existing.outputs.published != 'true'
+        env:
+          URL: https://registry.modelcontextprotocol.io/v0.1/servers/${{ steps.meta.outputs.name_url }}/versions/${{ steps.meta.outputs.version }}
+        run: |
+          curl -fsS "$URL" | jq '{name: .server.name, version: .server.version, meta: ._meta}'

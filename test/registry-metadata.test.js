@@ -7,7 +7,8 @@
 // describes a tool list that has already drifted once (35 → 37 → 40).
 //
 // These assert the constraints that are checkable offline. Full JSON Schema
-// validation lives in the release workflow, against the published schema.
+// validation is the registry-schema job in CI, with the registry's own
+// mcp-publisher, and runs again as a gate in the release workflow.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

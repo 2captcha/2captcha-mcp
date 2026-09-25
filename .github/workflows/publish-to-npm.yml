@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   release:
-    name: Publish to npm, the MCP Registry and GitHub Releases
+    name: Publish to npm, GitHub Releases and GHCR
     runs-on: ubuntu-latest
 
     steps:
@@ -58,17 +58,12 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Install mcp-publisher
-        run: |
-          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz" \
-            | tar xz mcp-publisher
-          sudo install -m 0755 mcp-publisher /usr/local/bin/mcp-publisher
-          mcp-publisher --version || true
-        env:
-          MCP_PUBLISHER_VERSION: v1.8.1
+      - name: Set up mcp-publisher
+        uses: ./.github/actions/setup-mcp-publisher
 
       # Catches the constraints the local tests cannot see — the registry's
-      # JSON Schema, in full — before anything is published anywhere.
+      # JSON Schema, in full — before anything is published anywhere. The
+      # registry publish itself is the mcp-registry job below, after npm.
       - name: Validate server.json against the registry schema
         run: mcp-publisher validate server.json
 
@@ -80,30 +75,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public --provenance
-
-      # The registry verifies ownership by fetching the npm package and
-      # checking its `mcpName` field against server.json's name, so this has to
-      # follow the npm publish — and npm's CDN needs a moment to serve it.
-      - name: Publish to the MCP Registry
-        env:
-          MCP_DNS_PRIVATE_KEY: ${{ secrets.MCP_REGISTRY_DNS_PRIVATE_KEY }}
-        run: |
-          if [ -z "$MCP_DNS_PRIVATE_KEY" ]; then
-            echo "::warning::MCP_REGISTRY_DNS_PRIVATE_KEY is not set — skipping the MCP Registry."
-            echo "The npm release above is unaffected. See docs/RELEASING.md for the one-time DNS setup."
-            exit 0
-          fi
-          mcp-publisher login dns --domain 2captcha.com --private-key "$MCP_DNS_PRIVATE_KEY"
-          for attempt in 1 2 3 4 5; do
-            if mcp-publisher publish server.json; then
-              echo "published to the MCP Registry"
-              exit 0
-            fi
-            echo "attempt $attempt failed (npm may not be serving the new version yet); retrying in 30s"
-            sleep 30
-          done
-          echo "::error::mcp-publisher publish failed after 5 attempts"
-          exit 1
 
       # `npm publish` above ran prepack, so the bundle already exists; build
       # again anyway so this step does not depend on that side effect.
@@ -146,3 +117,13 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.version=${{ github.ref_name }}
             org.opencontainers.image.licenses=MIT
+
+  # Separate job so the DNS signing key lives on the `mcp-registry`
+  # environment and is never in scope for npm ci / build. It needs the npm
+  # release (the registry checks the package's mcpName); if anything after npm
+  # fails, re-run it alone from Actions → MCP Registry on the tag.
+  mcp-registry:
+    needs: release
+    permissions:
+      contents: read
+    uses: ./.github/workflows/mcp-registry.yml

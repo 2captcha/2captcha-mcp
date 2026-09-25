@@ -34,22 +34,35 @@ npm run version:check
 1. `npm ci`, then the tag/version agreement check, then `npm test`.
 2. `mcp-publisher validate server.json` — the registry's full JSON Schema. This
    is not a formality: the registry caps `description` at 100 characters and
-   ours was 135, so the first submission would have been rejected.
+   ours was 135, so the first submission would have been rejected. CI runs the
+   same check on every PR (the `registry-schema` job), so this should never be
+   where it fails.
 3. `npm publish --access public --provenance`. This runs `prepack`, which is
    `npm run build` — so the tarball carries a freshly built `2captcha-mcp.mjs`
    rather than whatever bundle happened to be on the runner. What ships is the
    bundle; `server.js` is source only and is not in the tarball.
-4. `mcp-publisher publish` to the MCP Registry. This has to come *after* npm:
-   the registry proves ownership by fetching the npm package and matching its
-   `mcpName` field against `server.json`'s `name`. It retries for a couple of
-   minutes because npm's CDN does not serve a new version instantly.
-5. `npm run build && npm run bundle`, then a GitHub Release with `dist/*.mcpb`
+4. `npm run build && npm run bundle`, then a GitHub Release with `dist/*.mcpb`
    attached.
-6. The container image to `ghcr.io/2captcha/2captcha-mcp`, tagged with the
+5. The container image to `ghcr.io/2captcha/2captcha-mcp`, tagged with the
    version and `latest`, for amd64 and arm64.
+6. Then, as a separate job (`.github/workflows/mcp-registry.yml`), the MCP
+   Registry. It has to come *after* npm: the registry proves ownership by
+   fetching the npm package and matching its `mcpName` field against
+   `server.json`'s `name`, so the job first waits for npm's CDN to serve the
+   new version, then logs in with the DNS key and publishes, then reads the
+   entry back from the registry API.
 
-A missing registry key downgrades step 4 to a warning — the npm release still
-happens.
+The registry job is separate so that its signing key lives on the
+`mcp-registry` environment and is never in scope for `npm ci` or the build. A
+failure there (including a missing key) is a red job but does not undo or block
+anything above. To retry it alone: **Actions → MCP Registry → Run workflow**,
+and pick the release **tag** under "Use workflow from" — it refuses to run from
+a branch, and a version the registry already has is a no-op.
+
+`mcp-publisher` is pinned, and its tarball checked against the release's
+sha256, in `.github/actions/setup-mcp-publisher/action.yml`. To bump it, change
+both inputs there; a publisher too old for the registry fails login with
+`invalid audience`.
 
 GHCR needs no secret: it authenticates with the workflow's own `GITHUB_TOKEN`
 via `packages: write`. The first push creates the package as **private** —
@@ -74,8 +87,11 @@ answer to it than the warning in our README.
 ### `MCP_REGISTRY_DNS_PRIVATE_KEY`
 
 Our registry namespace is `com.2captcha`, which is the reverse-DNS form of
-`2captcha.com`. GitHub OIDC login only grants `io.github.*` namespaces, so
-proving this one means proving control of the domain.
+`2captcha.com`. GitHub OIDC login — the secretless option — only grants
+`io.github.*` namespaces, so proving this one means proving control of the
+domain. We keep `com.2captcha` anyway: a name under the vendor's own domain is
+something an unaffiliated publisher cannot claim, which `io.github.*` is not,
+and a registry name is not something to change after the fact.
 
 Generate a key pair and the DNS record:
 
@@ -100,7 +116,20 @@ Then:
 
 1. Add the TXT record at the apex and wait for it to propagate
    (`dig +short TXT 2captcha.com`).
-2. Put `$PRIVATE_KEY` in the repository secret `MCP_REGISTRY_DNS_PRIVATE_KEY`.
+2. Create the environment at **Settings → Environments → New environment**,
+   named exactly `mcp-registry`, and on it:
+   - **Deployment branches and tags → Selected branches and tags**, add a
+     *tag* rule `v*`. Only release tags can then reach the key.
+   - Optionally, **Required reviewers**, to approve each registry publish by
+     hand.
+   - **Environment secrets → Add secret** `MCP_REGISTRY_DNS_PRIVATE_KEY` with
+     `$PRIVATE_KEY`.
+
+   It must be an *environment* secret. The registry job is a reusable workflow
+   called without `secrets: inherit`, so a repository secret of the same name
+   is deliberately not visible to it — the key can publish anything under
+   `com.2captcha/*`, and a repository secret is readable by any workflow any
+   writer pushes. Delete the old repository secret if it exists.
 3. Delete `key.pem`. The secret is the only copy that needs to survive.
 
 Ed25519 here needs OpenSSL 3.0+. macOS ships LibreSSL as the system `openssl`,

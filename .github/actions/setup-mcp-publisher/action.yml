@@ -1,0 +1,32 @@
+name: Set up mcp-publisher
+description: >
+  Install a pinned mcp-publisher (the MCP Registry CLI) and verify it against
+  the checksum published with that release.
+
+# Pinned rather than `releases/latest`: the binary is handed a signing key in
+# the registry job, so what runs there should be exactly what was reviewed.
+# To bump, take the linux_amd64 line from registry_<version>_checksums.txt on
+# https://github.com/modelcontextprotocol/registry/releases. A binary that is
+# too old for the registry fails login with "invalid audience".
+inputs:
+  version:
+    description: Release tag
+    default: v1.8.1
+  sha256:
+    description: sha256 of mcp-publisher_linux_amd64.tar.gz for that release
+    default: a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        SHA256: ${{ inputs.sha256 }}
+      run: |
+        TARBALL="$RUNNER_TEMP/mcp-publisher.tar.gz"
+        curl -fsSL -o "$TARBALL" \
+          "https://github.com/modelcontextprotocol/registry/releases/download/${VERSION}/mcp-publisher_linux_amd64.tar.gz"
+        echo "${SHA256}  ${TARBALL}" | sha256sum -c -
+        tar xzf "$TARBALL" -C "$RUNNER_TEMP" mcp-publisher
+        sudo install -m 0755 "$RUNNER_TEMP/mcp-publisher" /usr/local/bin/mcp-publisher
