@@ -39,6 +39,13 @@
 
 </div>
 
+
+https://github.com/user-attachments/assets/884d89a8-3a73-495b-9649-dca282a70369
+
+<sub>Codex desktop, same model and prompt, recorded one after the other · 3× speed</sub>
+
+
+
 > [!IMPORTANT]
 > The official 2Captcha MCP package is **`@2captcha/mcp`** (published under the [@2captcha](https://www.npmjs.com/org/2captcha) npm organization). The unscoped `2captcha-mcp` package on npm is **not affiliated with 2Captcha** — don't put your API key into it.
 
