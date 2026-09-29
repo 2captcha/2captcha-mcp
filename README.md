@@ -323,6 +323,150 @@ Add to `~/.gemini/settings.json`:
 </details>
 
 <details>
+<summary><b>Kimi Code CLI</b></summary>
+
+Add to `~/.kimi-code/mcp.json`, or `.kimi-code/mcp.json` for a single project:
+
+```json
+{
+  "mcpServers": {
+    "2captcha": {
+      "command": "npx",
+      "args": ["@2captcha/mcp"],
+      "env": { "API_TOKEN": "YOUR_API_TOKEN" }
+    }
+  }
+}
+```
+
+Or skip the local process — a `url` key instead of `command` makes it an HTTP server:
+
+```json
+{
+  "mcpServers": {
+    "2captcha": {
+      "url": "https://mcp.2captcha.com/mcp",
+      "headers": { "Authorization": "Bearer YOUR_API_TOKEN" }
+    }
+  }
+}
+```
+
+`/mcp-config` in the TUI edits the same file; `/mcp` shows connection status.
+
+</details>
+
+<details>
+<summary><b>Qwen Code</b></summary>
+
+```bash
+qwen mcp add 2captcha -e API_TOKEN=YOUR_API_TOKEN npx @2captcha/mcp
+```
+
+Or hosted:
+
+```bash
+qwen mcp add --transport http 2captcha https://mcp.2captcha.com/mcp \
+  --header "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+Both write to `~/.qwen/settings.json` (`.qwen/settings.json` for project scope), which you can edit
+by hand — note the HTTP field is `httpUrl`, not `url`:
+
+```json
+{
+  "mcpServers": {
+    "2captcha": {
+      "command": "npx",
+      "args": ["@2captcha/mcp"],
+      "env": { "API_TOKEN": "YOUR_API_TOKEN" }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>DeepSeek Harness (<code>dsh</code>)</b></summary>
+
+`dsh` reaches MCP servers through the `@deepseek-ai/dsh-mcp-client` plugin — one entry per server in
+`cordis.patch.yml`, or any file you pass to `--patch`:
+
+```yaml
+- id: mcp-2captcha
+  name: '@deepseek-ai/dsh-mcp-client'
+  config:
+    serverName: 2captcha
+    transport: stdio
+    command: npx
+    args: ['@2captcha/mcp']
+    env:
+      API_TOKEN: !!js process.env.API_TOKEN
+```
+
+Or against the hosted server:
+
+```yaml
+- id: mcp-2captcha
+  name: '@deepseek-ai/dsh-mcp-client'
+  config:
+    serverName: 2captcha
+    transport: streamable-http
+    url: https://mcp.2captcha.com/mcp
+    headers:
+      Authorization: !!js '`Bearer ${process.env.API_TOKEN}`'
+```
+
+The agent then sees the tools as `mcp__2captcha__<tool>`.
+
+</details>
+
+<details>
+<summary><b>GLM (Z.ai)</b></summary>
+
+Two surfaces, two answers.
+
+**Through a coding CLI.** The GLM Coding Plan exposes an Anthropic-shaped endpoint, so Claude Code
+runs on GLM and keeps its own MCP config. Set `ANTHROPIC_BASE_URL` to
+`https://api.z.ai/api/anthropic` and `ANTHROPIC_AUTH_TOKEN` to your Z.ai key in
+`~/.claude/settings.json`, then install this server exactly as in the Claude Code block above.
+
+**Through the API.** Z.ai's `chat/completions` calls remote MCP servers itself. There is no local
+process in that path, so it needs the hosted URL:
+
+```json
+"tools": [
+  {
+    "type": "mcp",
+    "mcp": {
+      "server_label": "2captcha",
+      "server_url": "https://mcp.2captcha.com/mcp",
+      "headers": { "Authorization": "Bearer YOUR_API_TOKEN" }
+    }
+  }
+]
+```
+
+Streamable HTTP is the default transport, so `transport_type` can be left off. `allowed_tools`
+trims what the model sees; so does `GROUPS` — see [Tool Selection](#tool-selection-groups).
+
+</details>
+
+<details>
+<summary><b>MiniMax</b></summary>
+
+MiniMax publishes MCP *servers* (speech, image, video) but no first-party MCP client, so there is no
+MiniMax-specific file to edit for this server. Two routes that work today:
+
+- Run a MiniMax model inside any client above that lets you pick the backend — Cline, Continue,
+  Cursor and LM Studio all do — and install 2captcha there as usual.
+- For hosts that accept a remote MCP URL directly, point them at `https://mcp.2captcha.com/mcp`
+  with an `Authorization: Bearer YOUR_API_TOKEN` header.
+
+</details>
+
+<details>
 <summary><b>Continue</b></summary>
 
 Add to `~/.continue/config.yaml`:
