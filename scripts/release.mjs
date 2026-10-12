@@ -26,6 +26,7 @@ export const VERSION_SITES = {
     'package.json': [['version']],
     'server.json': [['version'], ['packages', 0, 'version']],
     'manifest.json': [['version']],
+    'gemini-extension.json': [['version']],
     'package-lock.json': [['version'], ['packages', '', 'version']],
 };
 

@@ -7,7 +7,7 @@ npm (signed with provenance), the MCP Registry, and a GitHub Release with the
 ## Cutting a release
 
 ```bash
-npm run release 0.1.3          # bumps all four version files, opens the CHANGELOG section
+npm run release 0.1.3          # bumps all five version files, opens the CHANGELOG section
 $EDITOR CHANGELOG.md           # write the notes under the new heading
 git commit -am "chore(release): 0.1.3"
 git tag v0.1.3

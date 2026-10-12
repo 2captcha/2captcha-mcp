@@ -45,7 +45,7 @@ jobs:
       # The tag is checked against package.json, and package.json against the
       # other three files that carry the version. Before this, a stale
       # package-lock.json passed the only gate there was.
-      - name: Check the tag and all four version files agree
+      - name: Check the tag and all five version files agree
         run: |
           TAG="${GITHUB_REF#refs/tags/v}"
           PKG="$(npm pkg get version | tr -d '"')"

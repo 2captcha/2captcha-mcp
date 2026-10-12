@@ -37,5 +37,6 @@ test('the npm package name is the same in all of them', ()=>{
 
 test('the release script covers exactly the files that carry a version', ()=>{
     assert.deepEqual(Object.keys(VERSION_SITES).sort(),
-        ['manifest.json', 'package-lock.json', 'package.json', 'server.json']);
+        ['gemini-extension.json', 'manifest.json', 'package-lock.json',
+            'package.json', 'server.json']);
 });
