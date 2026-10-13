@@ -101,7 +101,7 @@ jobs:
       # ("Multi-platform build is not supported for the docker driver"), and
       # arm64 on an amd64 runner needs QEMU to run the RUN steps.
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
